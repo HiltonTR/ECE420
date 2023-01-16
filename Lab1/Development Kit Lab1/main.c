@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     free(matrix_A); 
     free(matrix_B); 
     free(matrix_C);
-    free
+    free(threads);
 
 	return EXIT_SUCCESS;
 }
