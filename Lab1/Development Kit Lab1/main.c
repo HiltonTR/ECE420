@@ -92,10 +92,13 @@ int main(int argc, char *argv[]) {
 	GET_TIME(start);
 
     // create and join threads here
+    for (int thread = 0; thread < thread_count; thread++) {
+        pthread_create(&threads[thread], NULL, ComputePartition, (void*) thread);
+    }
 
-
-
-
+    for (int thread = 0; thread < thread_count; thread++){
+        pthread_join(threads[thread], NULL);
+    }
 
 
 	// Calculate end time
