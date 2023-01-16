@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
 
 	// Checks args
 	if (argc < 2) {
-	printf("Invalid input. Correct usage: ./main <thread count> \n");
-	return EXIT_FAILURE;
+        printf("Invalid input. Correct usage: ./main <thread count> \n");
+        return EXIT_FAILURE;
 	}
 
 	// Load inputs
