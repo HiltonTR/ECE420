@@ -34,27 +34,34 @@ void *ComputePartition(void* rank, void* dim, void* A, void* B, void* C, void* m
 */
     // cast void pointers to usable types
     long t_rank = (long) rank;
-    int sqrt_proc = sqrt(thread_count);
-    int m_dim = (int) dim;
-    int*** m_A = (int***) A;
-    int*** m_B = (int***) B;
-    int*** m_C = (int***) C;
-    pthread_mutex_t* c_mutex = mutex;
+    int sqrt_proc = (int) sqrt(thread_count);
+    // int m_dim = (int) dim;
+    // int*** m_A = (int***) A;
+    // int*** m_B = (int***) B;
+    // int*** m_C = (int***) C;
+    // pthread_mutex_t* c_mutex = mutex;
+
+
+    // printf("m_dim %d \n", m_dim);
+    // printf("size %d \n", size);
 
     // use x,y to determine bounds of partition based on rank of thread
-    double x = floor(t_rank/sqrt_proc);
+    double x = floor(t_rank/sqrt(thread_count));
     double y = t_rank % sqrt_proc;
 
     // compute each element of partition and update results when safe
-    for (int i = x*m_dim/sqrt_proc; i < (x+1)*m_dim/sqrt_proc; i++){
-        int el_ij = 0;
-        for (int j = y*m_dim/sqrt_proc; j < (y+1)*m_dim/sqrt_proc; j++){
-            for (int d = 0; d < m_dim; d++){
-                el_ij += (*m_A[i][d]) * (*m_B[d][j]);
+    for (int i = x*size/sqrt_proc; i < (x+1)*size/sqrt_proc; i++){
+        
+        for (int j = y*size/sqrt_proc; j < (y+1)*size/sqrt_proc; j++){
+            int el_ij = 0;
+            for (int d = 0; d < size; d++){
+                el_ij += (matrix_A[i][d]) * (matrix_B[d][j]);
             }
-            pthread_mutex_lock(&c_mutex);
-            *m_C[i][j] = el_ij;
-            pthread_mutex_unlock(&c_mutex);
+            // pthread_mutex_lock(&c_mutex);
+            matrix_C[i][j] = el_ij;
+            // pthread_mutex_unlock(&c_mutex);
+
+            printf("matrix_C[i][j] %d \n", matrix_C[i][j]);
         }
     }
     
