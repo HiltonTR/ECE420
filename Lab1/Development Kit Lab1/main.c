@@ -4,7 +4,7 @@
 #include "lab1_IO.h"
 #include "sys/time.h"
 #include "timer.h"
-
+#include <stdlib.h>     // need this for EXIT_FAILURE and EXIT_SUCCESS
 
 // Global variables
 int thread_count;
@@ -33,13 +33,13 @@ void *ComputePartition(void* rank, void* num_proc, void* dim, void* A, void* B, 
     None, but modifies the content of matrix C
 */
     // cast void pointers to usable types
-    long t_rank = (long) *rank;
-    int sqrt_proc = sqrt((double) *num_proc);
-    int m_dim = (int) *dim;
+    long t_rank = (long) rank;
+    int sqrt_proc = sqrt(thread_count);
+    int m_dim = (int) dim;
     int*** m_A = (int***) A;
     int*** m_B = (int***) B;
     int*** m_C = (int***) C;
-    pthread_mutext_t* c_mutex = mutex;
+    pthread_mutex_t* c_mutex = mutex;
 
     // use x,y to determine bounds of partition based on rank of thread
     double x = floor(t_rank/sqrt_proc);
@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
     threads = malloc(thread_count*sizeof(pthread_t));
 
     matrix_C = malloc(size * sizeof(int*));
-    for (int i = 0; i < n; i++) {
-        C[i] = malloc(size * sizeof(int));
+    for (int i = 0; i < size; i++) {
+        matrix_C[i] = malloc(size * sizeof(int));
     }
 
 	// Calculate start time
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 	Lab1_saveoutput(matrix_C, &size, end - start);
 
     // Free memory
-    for (int i = 0; i <=n; i++) {
+    for (int i = 0; i < size; i++) {
         free(matrix_A[i]); 
         free(matrix_B[i]); 
         free(matrix_C[i]);
