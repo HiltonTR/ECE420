@@ -14,20 +14,13 @@ int** matrix_B;
 int** matrix_C;
 int size;
 
-void *ComputePartition(void* rank, void* dim, void* A, void* B, void* C, void* mutex){
+void *ComputePartition(void* rank){
     /*
     Function for worker thread to compute a partition of matrix multiplication A x B = C
 
     -----
     Input:
     long *rank                pointer to rank of worker thread
-    double *num_proc          pointer to total number of partitions/processes/threads
-    int *dim                  pointer to the matrix size
-    int ***A                  pointer to the matrix A
-    int ***B                  pointer to the matrix B
-    int ***C                  pointer to the matrix C, product matrix
-    pthread_mutex_t *mutex    pointer to mutex used to protect matrix C
-
     -----
     Output:
     None, but modifies the content of matrix C
@@ -35,15 +28,6 @@ void *ComputePartition(void* rank, void* dim, void* A, void* B, void* C, void* m
     // cast void pointers to usable types
     long t_rank = (long) rank;
     int sqrt_proc = (int) sqrt(thread_count);
-    // int m_dim = (int) dim;
-    // int*** m_A = (int***) A;
-    // int*** m_B = (int***) B;
-    // int*** m_C = (int***) C;
-    // pthread_mutex_t* c_mutex = mutex;
-
-
-    // printf("m_dim %d \n", m_dim);
-    // printf("size %d \n", size);
 
     // use x,y to determine bounds of partition based on rank of thread
     double x = floor(t_rank/sqrt(thread_count));
@@ -57,11 +41,8 @@ void *ComputePartition(void* rank, void* dim, void* A, void* B, void* C, void* m
             for (int d = 0; d < size; d++){
                 el_ij += (matrix_A[i][d]) * (matrix_B[d][j]);
             }
-            // pthread_mutex_lock(&c_mutex);
-            matrix_C[i][j] = el_ij;
-            // pthread_mutex_unlock(&c_mutex);
 
-            printf("matrix_C[i][j] %d \n", matrix_C[i][j]);
+            matrix_C[i][j] = el_ij;
         }
     }
     
@@ -106,7 +87,6 @@ int main(int argc, char *argv[]) {
     for (int thread = 0; thread < thread_count; thread++){
         pthread_join(threads[thread], NULL);
     }
-
 
 	// Calculate end time
 	GET_TIME(end);
