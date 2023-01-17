@@ -14,7 +14,7 @@ int** matrix_B;
 int** matrix_C;
 int size;
 
-void *ComputePartition(void* rank, void* num_proc, void* dim, void* A, void* B, void* C, void* mutex){
+void *ComputePartition(void* rank, void* dim, void* A, void* B, void* C, void* mutex){
     /*
     Function for worker thread to compute a partition of matrix multiplication A x B = C
 
@@ -50,7 +50,7 @@ void *ComputePartition(void* rank, void* num_proc, void* dim, void* A, void* B, 
         int el_ij = 0;
         for (int j = y*m_dim/sqrt_proc; j < (y+1)*m_dim/sqrt_proc; j++){
             for (int d = 0; d < m_dim; d++){
-                el_ij += (*m_A[i][d]) * (*m_A[d][j]);
+                el_ij += (*m_A[i][d]) * (*m_B[d][j]);
             }
             pthread_mutex_lock(&c_mutex);
             *m_C[i][j] = el_ij;
