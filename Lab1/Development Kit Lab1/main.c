@@ -8,7 +8,6 @@
 
 // Global variables
 int thread_count;
-
 int** matrix_A;
 int** matrix_B;
 int** matrix_C;
@@ -27,21 +26,27 @@ void *ComputePartition(void* rank){
 */
     // cast void pointers to usable types
     long t_rank = (long) rank;
-    int sqrt_proc = (int) sqrt(thread_count);
+    int i, j, d;
+    double d_thread_count = (double) thread_count;
+    double sqrt_proc =  sqrt(d_thread_count);
 
     // use x,y to determine bounds of partition based on rank of thread
-    double x = floor(t_rank/sqrt(thread_count));
-    double y = t_rank % sqrt_proc;
+    int x = floor(t_rank/sqrt_proc);
+    int y = t_rank % (int) sqrt_proc;
+
+    int first_row = x*size/sqrt_proc;
+    int last_row = (x+1)*size/sqrt_proc;
+    int first_col = y*size/sqrt_proc;
+    int last_col = (y+1)*size/sqrt_proc;
 
     // compute each element of partition and update results when safe
-    for (int i = x*size/sqrt_proc; i < (x+1)*size/sqrt_proc; i++){
-        
-        for (int j = y*size/sqrt_proc; j < (y+1)*size/sqrt_proc; j++){
+    for (i = first_row; i < last_row; i++){
+        for (j = first_col; j < last_col; j++){
             int el_ij = 0;
-            for (int d = 0; d < size; d++){
-                el_ij += (matrix_A[i][d]) * (matrix_B[d][j]);
-            }
+            for (d = 0; d < size; d++){
 
+                el_ij += matrix_A[i][d] * matrix_B[d][j];
+            }
             matrix_C[i][j] = el_ij;
         }
     }
