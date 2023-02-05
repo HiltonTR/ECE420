@@ -2,6 +2,10 @@
 
 pthread_mutex_t arrMutex;
 
+void InitArrayPro(int n){
+    pthread_mutex_init(&arrMutex, NULL);
+}
+
 void *WorkerSingleMutex(void *args)
 {
     int clientFileDescriptor=(int)args;

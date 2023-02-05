@@ -1,8 +1,5 @@
 #include "common.h"
 
-
-
-
 // parse the massage from client and get the control info and message info
 // Input: msg: message string with format "pos-is_read-XXXXXXX"
 //        rqst: previously allocated stucture to store the parsed result 

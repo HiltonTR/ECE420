@@ -8,6 +8,7 @@
 
 char** theArray;
 void* WorkerFunc;
+void InitArrayPro(int n);
 
 /* Important parameters */
 // Change these if needed

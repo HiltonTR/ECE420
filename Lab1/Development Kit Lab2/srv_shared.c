@@ -34,6 +34,10 @@ int main(int argc, char* argv[])
     free(initializationStr);
 
 
+    // set up access protection to data structure
+    InitArrayPro(n);
+
+
     // set up sockets, listen and connect, spawing threads to handle new cnxs
     struct sockaddr_in sock_var;
     int serverFileDescriptor=socket(AF_INET,SOCK_STREAM,0);
