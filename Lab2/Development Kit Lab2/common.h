@@ -5,10 +5,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include "timer.h"
 
-char** theArray;
-void* WorkerFunc;
-void InitArrayPro(int n);
+
 
 /* Important parameters */
 // Change these if needed
@@ -52,5 +51,15 @@ void getContent(char* dst, int pos, char **theArray);
 // Input: time: pointer to the array that store the time for each request
 //        length: length of the time
 void saveTimes(double* time, int length);
+
+
+
+char** theArray;
+void* WorkerFunc;
+void InitArrayPro(int n);
+void timeMng();
+double times [COM_NUM_REQUEST];
+double start_time, end_time;
+int times_ind;
 
 #endif

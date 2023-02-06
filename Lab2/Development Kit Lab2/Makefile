@@ -4,16 +4,16 @@ CFLAGS = -Wall
 all: main1 main2 main3 main4
 
 #------------------------------------------------------------------------------
-main1: srv_shared.o common.o s1_worker.o
+main1: srv_shared.o common.o s1_worker.o 
 	$(CC) $(CFLAGS) srv_shared.o common.o s1_worker.o -o main1 -lpthread
 
-main2: srv_shared.o common.o s2_worker.o
+main2: srv_shared.o common.o s2_worker.o 
 	$(CC) $(CFLAGS) srv_shared.o common.o s2_worker.o -o main2 -lpthread
 
-main3: srv_shared.o common.o s3_worker.o
+main3: srv_shared.o common.o s3_worker.o 
 	$(CC) $(CFLAGS) srv_shared.o common.o s3_worker.o -o main3 -lpthread
 
-main4: srv_shared.o common.o s4_worker.o
+main4: srv_shared.o common.o s4_worker.o 
 	$(CC) $(CFLAGS) srv_shared.o common.o s4_worker.o -o main4 -lpthread
 
 # -----------------------------------------------------------------------------

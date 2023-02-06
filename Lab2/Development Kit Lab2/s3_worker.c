@@ -3,16 +3,19 @@
 pthread_rwlock_t arrLock;
 
 void InitArrayPro(int n){
+    times_ind = 0;
     pthread_rwlock_init(&arrLock, NULL);
 }
 
-void *WorkerSingleLock(void *args)
-{
+void *WorkerSingleLock(void *args){
+    double startTime, endTime;
     int clientFileDescriptor=(int)args;
     char cs_msg[COM_BUFF_SIZE];
-    read(clientFileDescriptor,cs_msg,COM_BUFF_SIZE);
-
     ClientRequest cr;
+
+    read(clientFileDescriptor,cs_msg,COM_BUFF_SIZE);
+    GET_TIME(startTime);
+
     ParseMsg(cs_msg, &cr);
     if (cr.is_read){
         pthread_rwlock_rdlock(&arrLock);
@@ -25,8 +28,11 @@ void *WorkerSingleLock(void *args)
         getContent(cs_msg,cr.pos,theArray);
         pthread_rwlock_unlock(&arrLock);
     }
+    GET_TIME(endTime); 
     write(clientFileDescriptor,cs_msg,COM_BUFF_SIZE);
+
     close(clientFileDescriptor);
+    timeMng(endTime-startTime);
     return NULL;
 }
 

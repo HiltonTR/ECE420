@@ -6,6 +6,19 @@
 #include<arpa/inet.h>
 
 
+
+pthread_mutex_t time_mutex;
+void timeMng(double time_diff){
+    pthread_mutex_lock(&time_mutex);
+    times[times_ind] = time_diff;
+    times_ind++;
+    if (times_ind == COM_NUM_REQUEST){
+        saveTimes(times, COM_NUM_REQUEST);
+        times_ind = 0;        
+    }
+    pthread_mutex_unlock(&time_mutex);
+}
+
 int main(int argc, char* argv[])
 {
     // parse input args
@@ -16,7 +29,6 @@ int main(int argc, char* argv[])
     int n = atoi(argv[1]);
     const char* s_ip = argv[2];
     int s_port = atoi(argv[3]);
-    printf("n is %i\n",n);
 
 
     // set up the data structure
