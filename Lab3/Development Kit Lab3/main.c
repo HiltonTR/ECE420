@@ -45,6 +45,20 @@ int main(int argc, char* argv[]) {
 	else{
 		// Gaussian elim
 		for (k = 0; k < size - 1; ++k) {
+            // Pivot
+            double pivot = 0;
+            j = 0;
+            for (i = k; i < size; ++i) {
+                if (pivot < Augmented[index[i]][k] * Augmented[index[i]][k]){
+                    pivot = Augmented[index[i]][k] * Augmented[index[i]][k];
+                    j = i;
+                }
+            }
+            if (j != k) /*swap*/ {
+                i = index[j];
+                index[j] = index[k];
+                index[k] = i;
+            }
 			#pragma omp parallel for private(temp,i,j) num_threads(thread_count)
 			for (i = k + 1; i < size; ++i) {
 				temp = Augmented[index[i]][k] / Augmented[index[k]][k];
@@ -80,3 +94,5 @@ int main(int argc, char* argv[]) {
 	free(index);
 	return 0;
 }
+
+
