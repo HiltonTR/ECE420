@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
                 index[j] = index[k];
                 index[k] = i;
             }
-			#pragma omp parallel for private(temp,i,j) num_threads(thread_count) schedule(auto)
+			#pragma omp parallel for private(temp,i,j) num_threads(thread_count) schedule(static)
 			for (i = k + 1; i < size; ++i) {
 				temp = Augmented[index[i]][k] / Augmented[index[k]][k];
 				for (j = k; j < size + 1; ++j)
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 		}
 		// Jordan elim
 		for (k = size - 1; k > 0; --k) {
-			#pragma omp parallel for private(temp,i) num_threads(thread_count) schedule(auto)
+			#pragma omp parallel for private(temp,i) num_threads(thread_count) schedule(static)
 			for (i = 0; i < k; i++ ) {
 				temp = Augmented[index[i]][k] / Augmented[index[k]][k];
 				Augmented[index[i]][k] -= temp * Augmented[index[k]][k];
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		// merge
-		#pragma omp parallel for private(k) num_threads(thread_count) schedule(auto)
+		#pragma omp parallel for private(k) num_threads(thread_count) schedule(static)
 		for (k=0; k< size; ++k) {
 			Sol[k] = Augmented[index[k]][size] / Augmented[index[k]][k];
 		}
