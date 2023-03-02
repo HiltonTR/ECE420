@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 	GET_TIME(end);
     FILE* op;
     char filename[30];
-    sprintf(filename,"inner_loop_nt_%i_ms_%i",thread_count,matrix_size);
+    sprintf(filename,"outloop_static_nt_%i_ms_%i",thread_count,matrix_size);
     if ((op = fopen(filename,"a+")) == NULL){
         printf("Error opening the output file: inner_loop.\n");
         exit(1);
