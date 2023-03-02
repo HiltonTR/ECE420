@@ -6,8 +6,14 @@ main: main.c Lab3IO.c
 IO: main.c Lab3IO.c
 	gcc -o main main.c Lab3IO.c -fopenmp -lm
 
+steph: steph.c Lab3IO.c timer.h
+	gcc -w -o steph steph.c Lab3IO.c -fopenmp -lm
+
 datagen: datagen.c
 	gcc -o datagen datagen.c Lab3IO.c
+
+steph: steph.c Lab3IO.c
+	gcc -w -o steph steph.c Lab3IO.c -fopenmp -lm
 
 serial:
 	gcc -o serialtester serialtester.c Lab3IO.c -lm
