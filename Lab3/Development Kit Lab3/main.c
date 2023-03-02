@@ -54,7 +54,11 @@ int main(int argc, char* argv[]) {
                     j = i;
                 }
             }
-
+            if (j != k) /*swap*/ {
+                i = index[j];
+                index[j] = index[k];
+                index[k] = i;
+            }
 			#pragma omp parallel for private(temp,i,j) num_threads(thread_count)
 			for (i = k + 1; i < size; ++i) {
 				temp = Augmented[index[i]][k] / Augmented[index[k]][k];
