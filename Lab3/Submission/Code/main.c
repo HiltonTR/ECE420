@@ -6,7 +6,7 @@
 #include "timer.h"
 /*
 	Usage for Gauss Jorndan elimination program is:
-	./main <numebr of threads> <matrix size>
+	./main <numebr of threads> 
 */
 
 int thread_count;
@@ -15,17 +15,15 @@ int main(int argc, char* argv[]) {
 	int i, j, k, size;
 	double** Augmented;
 	double temp;
-    int matrix_size;
 
 	// check threads entry from cmd line
-	if (argc != 3){
-		fprintf(stderr, "%s <number of threads> <matrix size>\n", argv[0]);
+	if (argc != 2){
+		fprintf(stderr, "%s <number of threads>\n", argv[0]);
 		exit(0);
 	}
 	thread_count = strtol(argv[1], NULL, 10);
-	matrix_size = strtol(argv[2], NULL, 10);
 	if (thread_count <= 0){
-			fprintf(stderr, "%s <number of threads> <matrix size>\n", argv[0]);
+			fprintf(stderr, "%s <number of threads>\n", argv[0]);
 		exit(0);
 	}
 
@@ -86,17 +84,9 @@ int main(int argc, char* argv[]) {
 			Sol[k] = Augmented[index[k]][size] / Augmented[index[k]][k];
 		}
 	}
-	// get end time and print
 	GET_TIME(end);
-    FILE* op;
-    char filename[30];
-    sprintf(filename,"outloop_runtime_nt_%i_ms_%i",thread_count,matrix_size);
-    if ((op = fopen(filename,"a+")) == NULL){
-        printf("Error opening the output file: inner_loop.\n");
-        exit(1);
-    }
-    fprintf(op,"%e\n", end-start);
-    fclose(op);
+	// get end time and print
+    printf("%lf\n", end-start);
 
 	// save output
 	Lab3SaveOutput(Sol, size, end-start);

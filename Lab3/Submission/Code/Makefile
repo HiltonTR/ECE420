@@ -13,4 +13,4 @@ serial:
 	gcc -o serialtester serialtester.c Lab3IO.c -lm
 
 clean:
-	rm datagen main data_input data_output serialtester *_nt_*
+	rm datagen main data_input data_output serialtester 
