@@ -1,10 +1,10 @@
-all: main IO datagen serial
+all: runtime datagen serial
 
 main: main.c Lab3IO.c
-	gcc -w -o main main.c Lab3IO.c -fopenmp -lm -O3
+	gcc -w -o main_auto main_auto.c Lab3IO.c -fopenmp -lm -O3
 
 IO: main.c Lab3IO.c
-	gcc -o main main.c Lab3IO.c -fopenmp -lm
+	gcc -o main_auto main_auto.c Lab3IO.c -fopenmp -lm
 
 static: main_static.c Lab3IO.c
 	gcc -w -o main_static main_static.c Lab3IO.c -fopenmp -lm -O3
@@ -43,4 +43,4 @@ serial:
 	gcc -o serialtester serialtester.c Lab3IO.c -lm
 
 clean:
-	rm datagen main main_static main_dynamic data_input data_output serialtester
+	rm datagen main_runtime main_auto main_static main_dynamic data_input data_output serialtester *_nt_*
