@@ -20,7 +20,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Lab4_IO.h"
-#include "mpi.h"
+#include "timer.h"
+#include <mpi.h>
 
 #define EPSILON 0.00001
 #define DAMPING_FACTOR 0.85
@@ -29,57 +30,39 @@
 int main (int argc, char* argv[]){
     struct node *nodehead;
     int nodecount;
-    double *r, *r_pre, *contribution;
+    double *r, *contribution;
     int i, j;
     double damp_const;
     int iterationcount = 0;
-    int collected_nodecount;
-    double *collected_r;
     double cst_addapted_threshold;
     double error;
-    FILE *fp, *ip;
-
-    // Load the data and simple verification
-    if ((fp = fopen("data_output", "r")) == NULL ){
-    	printf("Error loading the data_output.\n");
-        return 253;
-    }
-    fscanf(fp, "%d\n%lf\n", &collected_nodecount, &error);
-    if ((ip = fopen("data_input_meta","r")) == NULL) {
-        printf("Error opening the data_input_meta file.\n");
-        return 254;
-    }
-    fscanf(ip, "%d\n", &nodecount);
-    if (nodecount != collected_nodecount){
-        printf("Problem size does not match!\n");
-        return 2;
-    }
-    fclose(ip);
-    collected_r = malloc(collected_nodecount * sizeof(double));
-    for ( i = 0; i < collected_nodecount; ++i)
-        fscanf(fp, "%lf\n", &collected_r[i]);
-    fclose(fp);
-
-    // Adjust the threshold according to the problem size
-    cst_addapted_threshold = THRESHOLD;
-    if (node_init(&nodehead, 0, nodecount)) return 254;
 
 
-    
     int my_rank;
     int my_lowest_node_inc;
     int my_highest_node_ex;
     double *my_r;
     double *my_contribution;
+    double *my_r_pre;
     int process_count;
     int pad_add_count;
     int padded_nodecount;
     int nodes_per_process;
+    double start, end;
 
+    // load data
+    if (node_init(&nodehead, 0, nodecount)){
+        printf("Error in call to node_init\n");
+        return 1;
+    }
+    
+    printf("my1");
     // Start MPI and divide nodes between processes
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &process_count);
+    
+    printf("my2");
 
     pad_add_count = nodecount % process_count;
     padded_nodecount = nodecount + pad_add_count; // in case num nodes not perfectly divisible by num processes
@@ -97,8 +80,8 @@ int main (int argc, char* argv[]){
         for ( i = 0; i < nodecount; ++i)
             contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
         
-        MPI_Bcast(r, padded_nodecount, double, 0, MPI_COMM_WORLD);
-        MPI_Bcast(contribution, padded_nodecount, double, 0, MPI_COMM_WORLD);
+        MPI_Bcast(r, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(contribution, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -132,8 +115,8 @@ int main (int argc, char* argv[]){
             my_ind++;
         }
         // update global r, contribution
-        MPI_Allgather(my_r, nodes_per_process, double, r, nodes_per_process, double, MPI_COMM_WORLD);
-        MPI_Allgather(my_contribution, nodes_per_process, double, contribution, nodes_per_process, double, MPI_COMM_WORLD);
+        MPI_Allgather(my_r, nodes_per_process, MPI_DOUBLE, r, nodes_per_process, MPI_DOUBLE, MPI_COMM_WORLD);
+        MPI_Allgather(my_contribution, nodes_per_process, MPI_DOUBLE, contribution, nodes_per_process, MPI_DOUBLE, MPI_COMM_WORLD);
         // wait for all processes to update globals before continuing
         MPI_Barrier(MPI_COMM_WORLD);
     
@@ -145,11 +128,15 @@ int main (int argc, char* argv[]){
     // thread 0 responsible for timing/printing
     if (my_rank == 0){
         GET_TIME(end);
-        printf("Program converged at %d th iteration.\nElapsed time %f.\n", iterationcount, end-start); 
+        double Time = end-start;
+        printf("Elapsed time %f.\n", Time); 
+        Lab4_saveoutput(r, nodecount, Time);
     }
     
     // post processing
     MPI_Finalize();
     node_destroy(nodehead, nodecount);
     free(contribution);
+
+    return 0;
 }
