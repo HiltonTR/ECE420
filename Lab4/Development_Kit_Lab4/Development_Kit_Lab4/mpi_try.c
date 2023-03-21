@@ -24,7 +24,6 @@
 
 #define EPSILON 0.00001
 #define DAMPING_FACTOR 0.85
-
 #define THRESHOLD 0.0001
 
 int main (int argc, char* argv[]){
@@ -66,68 +65,91 @@ int main (int argc, char* argv[]){
     if (node_init(&nodehead, 0, nodecount)) return 254;
 
 
-    // Start MPI and divide nodes between processes
+    
     int my_rank;
     int my_lowest_node_inc;
     int my_highest_node_ex;
     double *my_r;
-    double *my_point_to_global_r;
+    double *my_contribution;
     int process_count;
     int pad_add_count;
     int padded_nodecount;
     int nodes_per_process;
+
+    // Start MPI and divide nodes between processes
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &process_count);
 
-    // single process allocates space, others must wait
+    pad_add_count = nodecount % process_count;
+    padded_nodecount = nodecount + pad_add_count; // in case num nodes not perfectly divisible by num processes
+    nodes_per_process = padded_nodecount / process_count;
+    damp_const = (1.0 - DAMPING_FACTOR) / nodecount;
+
+    // single process allocates space initializes data structures, others must wait
     if (my_rank == 0){
-        // in case num nodes not perfectly divisible by num processes
-        pad_add_count = nodecount % process_count;
-        padded_nodecount = nodecount + pad_add_count;
-        nodes_per_process = padded_nodecount/process_count;
         r = malloc(padded_nodecount * sizeof(double));
-        r_pre = malloc(padded_nodecount * sizeof(double));
         contribution = malloc(padded_nodecount * sizeof(double));
+
+        for ( i = 0; i < nodecount; ++i)
+            r[i] = 1.0 / nodecount;
+        contribution = malloc(nodecount * sizeof(double));
+        for ( i = 0; i < nodecount; ++i)
+            contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
+        
+        MPI_Bcast(r, padded_nodecount, double, 0, MPI_COMM_WORLD);
+        MPI_Bcast(contribution, padded_nodecount, double, 0, MPI_COMM_WORLD);
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // each process computes what nodes its responsible for and initializes their values
+    // each process computes what nodes its responsible for
     my_lowest_node_inc = my_rank * nodes_per_process;
     my_highest_node_ex = (my_rank+1) * nodes_per_process;
     my_r = malloc(nodes_per_process * sizeof(double));
-    my_point_to_global_r = r + my_rank * nodes_per_process * sizeof(double);
+    my_contribution = malloc(nodes_per_process * sizeof(double));
+    my_r_pre = malloc(nodes_per_process * sizeof(double));
     
-    for ( i = my_lowest_node_inc; i < my_highest_node_ex; ++i)
-        r[i] = 1.0 / nodecount;
-    for ( i = my_lowest_node_inc; i < my_highest_node_ex; ++i)
-        contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
-    damp_const = (1.0 - DAMPING_FACTOR) / nodecount;
-    
+
     // CORE CALCULATION
-    // FIX ME PARALELIZE AND END PARALIZATION
-    GET_TIME(start);
+    if (my_rank == 0)
+        GET_TIME(start);
     do{
         ++iterationcount;
-        vec_cp(r, r_pre, nodecount);
+        vec_cp(my_r, my_r_pre, nodes_per_process);
         // update the value
-        for ( i = 0; i < nodecount; ++i){
-            r[i] = 0;
-            for ( j = 0; j < nodehead[i].num_in_links; ++j)
-                r[i] += contribution[nodehead[i].inlinks[j]];
-            r[i] += damp_const;
+        int my_ind = 0;
+        for (i = my_lowest_node_inc; i < my_highest_node_ex; ++i){
+            my_r[my_ind] = 0;
+            for (j = 0; j < nodehead[i].num_in_links; ++j)
+                my_r[my_ind] += contribution[nodehead[i].inlinks[j]];
+            my_r[my_ind] += damp_const;
+            my_ind++;
         }
         // update and broadcast the contribution
-        for ( i=0; i<nodecount; ++i){
-            contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
+        my_ind = 0;
+        for (i = my_lowest_node_inc; i < my_highest_node_ex; ++i){
+            my_contribution[my_ind] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
+            my_ind++;
         }
-    }while(rel_error(r, r_pre, nodecount) >= EPSILON);
-    GET_TIME(end);
-    printf("Program converged at %d th iteration.\nElapsed time %f.\n", iterationcount, end-start);
-
+        // update global r, contribution
+        MPI_Allgather(my_r, nodes_per_process, double, r, nodes_per_process, double, MPI_COMM_WORLD);
+        MPI_Allgather(my_contribution, nodes_per_process, double, contribution, nodes_per_process, double, MPI_COMM_WORLD);
+        // wait for all processes to update globals before continuing
+        MPI_Barrier(MPI_COMM_WORLD);
+    
+    }while(rel_error(my_r, my_r_pre, nodes_per_process) >= EPSILON);
+    
+    // wait for all processes to finish
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    // thread 0 responsible for timing/printing
+    if (my_rank == 0){
+        GET_TIME(end);
+        printf("Program converged at %d th iteration.\nElapsed time %f.\n", iterationcount, end-start); 
+    }
+    
     // post processing
+    MPI_Finalize();
     node_destroy(nodehead, nodecount);
     free(contribution);
-    
-
 }
