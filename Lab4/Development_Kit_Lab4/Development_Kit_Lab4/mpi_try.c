@@ -70,6 +70,8 @@ int main (int argc, char* argv[]){
     int my_rank;
     int my_lowest_node_inc;
     int my_highest_node_ex;
+    double *my_r;
+    double *my_point_to_global_r;
     int process_count;
     int pad_add_count;
     int padded_nodecount;
@@ -93,6 +95,8 @@ int main (int argc, char* argv[]){
     // each process computes what nodes its responsible for and initializes their values
     my_lowest_node_inc = my_rank * nodes_per_process;
     my_highest_node_ex = (my_rank+1) * nodes_per_process;
+    my_r = malloc(nodes_per_process * sizeof(double));
+    my_point_to_global_r = r + my_rank * nodes_per_process * sizeof(double);
     
     for ( i = my_lowest_node_inc; i < my_highest_node_ex; ++i)
         r[i] = 1.0 / nodecount;
@@ -100,8 +104,9 @@ int main (int argc, char* argv[]){
         contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
     damp_const = (1.0 - DAMPING_FACTOR) / nodecount;
     
-    // CORE CALCULATION FIX ME PARALELIZE AND END PARALIZATION
-    // GET_TIME(start);
+    // CORE CALCULATION
+    // FIX ME PARALELIZE AND END PARALIZATION
+    GET_TIME(start);
     do{
         ++iterationcount;
         vec_cp(r, r_pre, nodecount);
@@ -117,8 +122,8 @@ int main (int argc, char* argv[]){
             contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
         }
     }while(rel_error(r, r_pre, nodecount) >= EPSILON);
-    // GET_TIME(end);
-    // printf("Program converged at %d th iteration.\nElapsed time %f.\n", iterationcount, end-start);
+    GET_TIME(end);
+    printf("Program converged at %d th iteration.\nElapsed time %f.\n", iterationcount, end-start);
 
     // post processing
     node_destroy(nodehead, nodecount);
