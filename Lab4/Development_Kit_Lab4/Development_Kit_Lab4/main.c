@@ -49,41 +49,50 @@ int main (int argc, char* argv[]){
     int padded_nodecount;
     int nodes_per_process;
     double start, end;
+    FILE *ip;
 
     // load data
+    
+    if ((ip = fopen("data_input_meta","r")) == NULL) {
+        printf("Error opening the data_input_meta file.\n");
+        return 1;
+    }
+    fscanf(ip, "%d\n", &nodecount);
     if (node_init(&nodehead, 0, nodecount)){
         printf("Error in call to node_init\n");
         return 1;
     }
+    printf("nodecount is initially: %i",nodecount);
     
-    printf("my1");
     // Start MPI and divide nodes between processes
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &process_count);
     
-    printf("my2");
-
+  
     pad_add_count = nodecount % process_count;
     padded_nodecount = nodecount + pad_add_count; // in case num nodes not perfectly divisible by num processes
     nodes_per_process = padded_nodecount / process_count;
     damp_const = (1.0 - DAMPING_FACTOR) / nodecount;
 
-    // single process allocates space initializes data structures, others must wait
-    if (my_rank == 0){
-        r = malloc(padded_nodecount * sizeof(double));
-        contribution = malloc(padded_nodecount * sizeof(double));
+    
 
-        for ( i = 0; i < nodecount; ++i)
+    // single process ainitializes data structures, others must wait
+    r = malloc(padded_nodecount * sizeof(double));
+    contribution = malloc(padded_nodecount * sizeof(double));
+    
+    if (my_rank == 0){
+        for ( i = 0; i < padded_nodecount; ++i)
             r[i] = 1.0 / nodecount;
-        contribution = malloc(nodecount * sizeof(double));
-        for ( i = 0; i < nodecount; ++i)
+        contribution = malloc(padded_nodecount * sizeof(double));
+        for ( i = 0; i < padded_nodecount; ++i)
             contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
-        
-        MPI_Bcast(r, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Bcast(contribution, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
+
+    MPI_Bcast(r, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(contribution, padded_nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
+
 
     // each process computes what nodes its responsible for
     my_lowest_node_inc = my_rank * nodes_per_process;
@@ -91,7 +100,7 @@ int main (int argc, char* argv[]){
     my_r = malloc(nodes_per_process * sizeof(double));
     my_contribution = malloc(nodes_per_process * sizeof(double));
     my_r_pre = malloc(nodes_per_process * sizeof(double));
-    
+  
 
     // CORE CALCULATION
     if (my_rank == 0)
@@ -129,7 +138,8 @@ int main (int argc, char* argv[]){
     if (my_rank == 0){
         GET_TIME(end);
         double Time = end-start;
-        printf("Elapsed time %f.\n", Time); 
+        printf("Elapsed time %f.\n", Time);
+        printf("%i\n",nodecount); 
         Lab4_saveoutput(r, nodecount, Time);
     }
     
