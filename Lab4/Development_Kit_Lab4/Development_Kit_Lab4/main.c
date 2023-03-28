@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 
     int process_count;
     int nodes_per_process, padded_nodecount;
-    int continueLoop = 1;
+    int cont;
 
     double start, end;
 
@@ -81,13 +81,11 @@ int main(int argc, char* argv[]) {
     // single process ainitializes data structures, others must wait
     r = malloc(padded_nodecount * sizeof(double));
 
-    if (my_rank == 0){
-        for ( i = 0; i < nodecount; ++i)
-            r[i] = 1.0 / nodecount;
-        contribution = malloc(padded_nodecount * sizeof(double));
-        for ( i = 0; i < nodecount; ++i)
-            contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
-    }
+    for ( i = 0; i < nodecount; ++i)
+        r[i] = 1.0 / nodecount;
+    contribution = malloc(padded_nodecount * sizeof(double));
+    for ( i = 0; i < nodecount; ++i)
+        contribution[i] = r[i] / nodehead[i].num_out_links * DAMPING_FACTOR;
 
     MPI_Bcast(r, nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(contribution, nodecount, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -123,14 +121,12 @@ int main(int argc, char* argv[]) {
         MPI_Gather(my_r, nodes_per_process, MPI_DOUBLE, r, nodes_per_process, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Allgather(my_contribution, nodes_per_process, MPI_DOUBLE, contribution, nodes_per_process, MPI_DOUBLE, MPI_COMM_WORLD);
         // wait for all processes to update globals before continuing
-        MPI_Barrier(MPI_COMM_WORLD);
+        if (my_rank == 0) {
+            cont = (rel_error(r, my_r_pre, nodecount) >= EPSILON);
+        }
+        MPI_Bcast(&cont, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    }while(cont);
 
-
-    }while(rel_error(r, my_r_pre, nodes_per_process) >= EPSILON);
-
-    // wait for all processes to finish
-    MPI_Barrier(MPI_COMM_WORLD);
-    
     // thread 0 responsible for timing/printing
     if (my_rank == 0){
         GET_TIME(end);
