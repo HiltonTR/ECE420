@@ -106,16 +106,19 @@ int main(int argc, char* argv[]) {
         vec_cp(r, my_r_pre, nodecount);
 
         // update the value
+        int my_ind = 0;
         for ( i = my_lowest_node_inc; i <= my_highest_node_ex && i < nodecount; ++i){
-            my_r[i-my_lowest_node_inc] = 0;
+            my_ind = i-my_lowest_node_inc;
+            my_r[my_ind] = 0;
             for ( j = 0; j < nodehead[i].num_in_links; ++j)
-                my_r[i-my_lowest_node_inc] += contribution[nodehead[i].inlinks[j]];
-            my_r[i-my_lowest_node_inc] += damp_const;
+                my_r[my_ind] += contribution[nodehead[i].inlinks[j]];
+            my_r[my_ind] += damp_const;
         }
 
         // update and broadcast the contribution
         for ( i=my_lowest_node_inc; i <= my_highest_node_ex && i<nodecount; ++i){
-            my_contribution[i-my_lowest_node_inc] = my_r[i-my_lowest_node_inc] / nodehead[i].num_out_links * DAMPING_FACTOR;
+            my_ind = i-my_lowest_node_inc;
+            my_contribution[my_ind] = my_r[my_ind] / nodehead[i].num_out_links * DAMPING_FACTOR;
         }
 
         MPI_Gather(my_r, nodes_per_process, MPI_DOUBLE, r, nodes_per_process, MPI_DOUBLE, 0, MPI_COMM_WORLD);
