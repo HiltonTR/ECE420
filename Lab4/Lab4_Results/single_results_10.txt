@@ -1,0 +1,50 @@
+run single 10 times
+
+There are 1112 nodes and 208960 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+0.055722
+0.0554
+0.075562
+0.075451
+0.075257
+0.062978
+0.055444
+0.05531
+0.075437
+0.055515
+
+average:
+0.0642076
+
+
+There are 5424 nodes and 3629571 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+1.074346
+1.067447
+1.068836
+1.066493
+1.062933
+1.06313
+1.071134
+1.075372
+1.072954
+1.07212
+
+average:
+1.0694765
+
+
+There are 10000 nodes and 10224274 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+3.569477
+3.566979
+3.547503
+3.55021
+3.557172
+3.566142
+3.56409
+3.573336
+3.56311
+3.5722
+
+average:
+3.5630219
+
+

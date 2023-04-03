@@ -1,0 +1,50 @@
+run cluster 1 processes 10 times
+
+There are 1112 nodes and 208960 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+0.075313
+0.075955
+0.075215
+0.061378
+0.06718
+0.07523
+0.055547
+0.074961
+0.075946
+0.0616
+
+average:
+0.0698325
+
+
+There are 5424 nodes and 3629571 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+1.066648
+1.137387
+1.07004
+1.067501
+1.130389
+1.060002
+1.063653
+1.077234
+1.059475
+1.093599
+
+average:
+1.0825928
+
+
+There are 10000 nodes and 10224274 edges in the sub dataset including the added edges for the nodes with no outgoing links. 
+3.550046
+3.55444
+3.553927
+3.55339
+3.631661
+3.551122
+3.546521
+3.561848
+3.54615
+3.545675
+
+average:
+3.559478
+
+
